@@ -30,6 +30,15 @@ export class App {
     this.queueService = new QueueService();
     this.webhooks = {};
 
+    // Endpoint for webhook callback validation 'OPTIONS [hostname]/events'
+    this.app.options("/events", async (req, res) => {
+      const requestedOrigin = req.headers["webhook-request-origin"] as string;
+
+      res.setHeader("allow", ["POST"]);
+      res.setHeader("webhook-allowed-origin", requestedOrigin);
+      res.sendStatus(200);
+    });
+
     // Endpoint for event polling 'GET [hostname]/events'
     this.app.get("/events", async (_, res) => {
       const events = await this.queueService.pull();
